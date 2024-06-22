@@ -1,0 +1,18 @@
+# TODO (Jun 22 2024, luojia65): move this package to project root once we are
+# rewriting more board support packages to Rust language.
+
+[package]
+name = "syterkit-macros"
+version = "0.0.0"
+edition = "2021"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+quote = "1.0"
+proc-macro2 = "1.0"
+
+[dependencies.syn]
+version = "2.0.15"
+features = ["extra-traits", "full"]

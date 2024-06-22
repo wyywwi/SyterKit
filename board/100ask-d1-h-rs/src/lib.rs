@@ -2,14 +2,13 @@
 #![no_std]
 #![no_main]
 
-use panic_halt as _;
-
-fn main() {}
+use core::panic::PanicInfo;
 
 const STACK_SIZE: usize = 4 * 1024;
 static STACK: [u8; STACK_SIZE] = [0u8; STACK_SIZE];
 
 #[naked_function::naked]
+#[link_section = ".text.entry"]
 #[export_name = "_start"]
 pub unsafe extern "C" fn start() -> ! {
     asm!(
@@ -63,4 +62,16 @@ pub unsafe extern "C" fn start() -> ! {
         stack_size = const STACK_SIZE,
         rust_main = sym main,
     )
+}
+
+extern "C" {
+    fn main();
+}
+
+#[inline(never)]
+#[panic_handler]
+fn panic(_info: &PanicInfo) -> ! {
+    loop {
+        // TODO actual panic handler
+    }
 }

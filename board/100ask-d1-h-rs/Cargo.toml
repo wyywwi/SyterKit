@@ -2,7 +2,7 @@ cargo-features = ["per-package-target"]
 
 [package]
 name = "syterkit-100ask-d1-h"
-version = "0.1.0"
+version = "0.0.0"
 edition = "2021"
 default-target = "riscv64imac-unknown-none-elf"
 
@@ -10,9 +10,14 @@ default-target = "riscv64imac-unknown-none-elf"
 
 [dependencies]
 naked-function = "0.1.5"
-panic-halt = "0.2.0"
+syterkit-macros = { version = "0.0.0", path = "macros" }
+
+[lib]
+name = "syterkit_100ask_d1_h"
+test = false
+bench = false
 
 [[bin]]
-name = "syterkit-100ask-d1-h"
+name = "hello-world"
 test = false
 bench = false
