@@ -6,7 +6,7 @@ use syn::{parse, parse_macro_input, ItemFn, ReturnType, Visibility};
 
 /// SyterKit async runtime function entry.
 #[proc_macro_attribute]
-pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
+pub fn main(args: TokenStream, input: TokenStream) -> TokenStream {
     if !args.is_empty() {
         return parse::Error::new(Span::call_site(), "#[entry] attribute accepts no arguments")
             .to_compile_error()
@@ -53,12 +53,25 @@ pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
             #[allow(non_snake_case)]
             #[inline(always)]
             #(#attrs)*
-            #unsafety fn __syterkit__main() { // TODO async fn main
+            #unsafety async fn __syterkit__main() {
                 #(#stmts)*
             }
-            unsafe { __syterkit__main() };
+            use core::future::Future;
+            let mut fut = core::pin::pin!(unsafe { __syterkit__main() });
+            let mut cx = core::task::Context::from_waker(core::task::Waker::noop());
+            loop {
+                match fut.as_mut().poll(&mut cx) {
+                    core::task::Poll::Ready(_) => break,
+                    core::task::Poll::Pending => {
+                        unsafe { core::arch::asm!("wfi") }
+                    },
+                }
+            }
             loop {} // TODO perform 'shutdown' current environment
         }
     )
     .into()
 }
+
+// todo: #[test] macro. Ref:
+// https://github.com/compio-rs/compio/blob/d75b76e7ffe0359378ea2b42a8c6c7d6f3ff15a0/compio-macros/src/lib.rs#L22
