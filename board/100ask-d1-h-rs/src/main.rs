@@ -1,10 +1,26 @@
-#![feature(asm_const)]
 #![no_std]
 #![no_main]
 
+use allwinner_hal::uart::{Config, Serial};
+use embedded_hal::digital::{InputPin, OutputPin};
+use embedded_io::Write;
 use panic_halt as _;
 
-fn main() {}
+fn main() {
+    let (p, c) = allwinner_rt::__rom_init_params();
+
+    let mut pb0 = p.gpio.pb7.into_input();
+
+    pb0.with_output(|pad| pad.set_high()).unwrap();
+
+    let _input_high = pb0.is_high();
+
+    let tx = p.gpio.pb8.into_function::<7>();
+    let rx = p.gpio.pb9.into_function::<7>();
+    let mut serial = Serial::new(p.uart0, (tx, rx), Config::default(), &c, &p.ccu);
+
+    writeln!(serial, "Hello World!").unwrap();
+}
 
 const STACK_SIZE: usize = 4 * 1024;
 static STACK: [u8; STACK_SIZE] = [0u8; STACK_SIZE];
